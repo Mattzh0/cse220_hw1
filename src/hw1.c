@@ -52,21 +52,20 @@ unsigned int compute_checksum_sf(unsigned char packet[])
     unsigned int des_add = ((packet[3] & 0x0F) << 24) | (packet[4] << 16) | (packet[5] << 8) | (packet[6]);
     unsigned int sp = (packet[7] & 0xF0) >> 4;
     unsigned int dp = (packet[7] & 0x0F);
-    unsigned int f_offset = (packet[8] << 6) | ((packet[8] & 0xFC) >> 2);
+    unsigned int f_offset = (packet[8] << 6) | ((packet[9] & 0xFC) >> 2);
     unsigned int packet_length = ((packet[9] & 0x03) << 12) | (packet[10] << 4) | ((packet[11] & 0xF0) >> 4);
     unsigned int mh = ((packet[11] & 0x0F) << 1) | ((packet[12] & 0x80) >> 7);
-    unsigned int checksum = ((packet[12] & 0x7F) << 16) | (packet[13] << 8) | (packet[14]);
     unsigned int compression_scheme = ((packet[15] & 0xC0) >> 6);
     unsigned int tc = ((packet[15] & 0x3F));
 
-    dividend = src_add + des_add + sp + dp + f_offset + packet_length + mh + checksum + compression_scheme + tc;
+    dividend = src_add + des_add + sp + dp + f_offset + packet_length + mh + compression_scheme + tc;
 
     for (int i = 16; i <= packet_length - 4; i += 4) {
         signed int payload_int = (packet[i] << 24) | (packet[i+1] << 16) | (packet[i+2] << 8) | (packet[i+3]);
         dividend += abs(payload_int);
     }
 
-    unsigned int res = dividend / ((1 << 23) - 1);
+    unsigned int res = dividend % ((1 << 23) - 1);
 
     return res;
 }
