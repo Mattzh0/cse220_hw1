@@ -1,11 +1,5 @@
 #include "hw1.h"
 
-int main() {
-    unsigned char test[] = {0x01, 0xd2, 0x08, 0xa0, 0xb4, 0x11, 0xaa, 0xcd, 0x00, 0x00, 0x01, 0xca, 0xde, 0xad, 0xb1, 0xf3, 0x00, 0x84, 0x5f, 0xed, 0xff, 0xff, 0x66, 0x8f, 0x05, 0x88, 0x81, 0x92};
-    compute_checksum_sf(test);
-    return 0;
-}
-
 void print_packet_sf(unsigned char packet[])
 {
     unsigned int src_add = (packet[0] << 20) | (packet[1] << 12) | (packet[2] << 4) | ((packet[3] & 0xF0) >> 4);
@@ -24,7 +18,7 @@ void print_packet_sf(unsigned char packet[])
     printf("Fragment Offset: %u\n", f_offset);
 
     unsigned int packet_length = ((packet[9] & 0x03) << 12) | (packet[10] << 4) | ((packet[11] & 0xF0) >> 4);
-    printf("Packet_Length: %u\n", packet_length);
+    printf("Packet Length: %u\n", packet_length);
 
     unsigned int mh = ((packet[11] & 0x0F) << 1) | ((packet[12] & 0x80) >> 7);
     printf("Maximum Hop Count: %u\n", mh);
@@ -33,15 +27,20 @@ void print_packet_sf(unsigned char packet[])
     printf("Checksum: %u\n", checksum);
 
     unsigned int compression_scheme = ((packet[15] & 0xC0) >> 6);
-    printf("Checksum: %u\n", compression_scheme);
+    printf("Compression Scheme: %u\n", compression_scheme);
 
     unsigned int tc = ((packet[15] & 0x3F));
-    printf("Checksum: %u\n", tc);
+    printf("Traffic Class: %u\n", tc);
 
-    printf("Payload:");
+    printf("Payload: ");
     for (int i = 16; i <= packet_length - 4; i += 4) {
         signed int payload_int = (packet[i] << 24) | (packet[i+1] << 16) | (packet[i+2] << 8) | (packet[i+3]);
-        printf(" %d", payload_int);
+        if (i == (packet_length - 4)) { 
+            printf("%d\n", payload_int);
+        }
+        else {
+            printf("%d ", payload_int);
+        }
     }
 
 }
