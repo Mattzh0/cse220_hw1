@@ -86,7 +86,7 @@ unsigned int reconstruct_array_sf(unsigned char *packets[], unsigned int packets
         for (unsigned int j = 16; j <= packet_i_length - 4; j += 4) {
             signed int payload_int = (packets[i][j] << 24) | (packets[i][j+1] << 16) | (packets[i][j+2] << 8) | (packets[i][j+3]);
             if (index >= array_len) {
-                return count;
+                break; 
             }
             else {
                 array[index] = payload_int;
