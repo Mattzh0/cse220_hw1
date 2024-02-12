@@ -14,7 +14,7 @@ void print_packet_sf(unsigned char packet[])
     unsigned int dp = (packet[7] & 0x0F);
     printf("Destination Port: %u\n", dp);
 
-    unsigned int f_offset = (packet[8] << 6) | ((packet[8] & 0xFC) >> 2);
+    unsigned int f_offset = (packet[8] << 6) | ((packet[9] & 0xFC) >> 2);
     printf("Fragment Offset: %u\n", f_offset);
 
     unsigned int packet_length = ((packet[9] & 0x03) << 12) | (packet[10] << 4) | ((packet[11] & 0xF0) >> 4);
