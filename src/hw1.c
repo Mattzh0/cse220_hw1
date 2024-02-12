@@ -81,9 +81,9 @@ unsigned int reconstruct_array_sf(unsigned char *packets[], unsigned int packets
         }
 
         unsigned int packet_i_length = ((packets[i][9] & 0x03) << 12) | (packets[i][10] << 4) | ((packets[i][11] & 0xF0) >> 4);
-        unsigned int f_offset = (packets[i][8] << 6) | ((packets[i][8] & 0xFC) >> 2);
-        unsigned int index = f_offset / 4;
-        for (int j = 16; i <= packet_i_length - 4; j += 4) {
+        unsigned int f_offset = (packets[i][8] << 6) | ((packets[i][9] & 0xFC) >> 2);
+        unsigned int index = (f_offset / 4);
+        for (unsigned int j = 16; j <= packet_i_length - 4; j += 4) {
             signed int payload_int = (packets[i][j] << 24) | (packets[i][j+1] << 16) | (packets[i][j+2] << 8) | (packets[i][j+3]);
             if (index >= array_len) {
                 return count;
@@ -94,10 +94,8 @@ unsigned int reconstruct_array_sf(unsigned char *packets[], unsigned int packets
                 count += 1;
             }
         }
-
-        return count;
-
     }
+    return count;
 }
 
 unsigned int packetize_array_sf(int *array, unsigned int array_len, unsigned char *packets[], unsigned int packets_len,
