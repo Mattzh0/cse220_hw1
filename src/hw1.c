@@ -111,13 +111,13 @@ unsigned int packetize_array_sf(int *array, unsigned int array_len, unsigned cha
     while ((i < packets_len) && (array_index < array_len)) {
         packets[i] = malloc(16 + max_payload);
             
-        packets[i][0] = (src_addr >> 20) & 0x0F;
-        packets[i][1] = (src_addr >> 12) & 0x0F;
-        packets[i][2] = (src_addr >> 4) & 0x0F;
+        packets[i][0] = (src_addr >> 20) & 0xFF;
+        packets[i][1] = (src_addr >> 12) & 0xFF;
+        packets[i][2] = (src_addr >> 4) & 0xFF;
         packets[i][3] = ((src_addr & 0x0F) << 4) | ((dest_addr >> 24) & 0x0F);
-        packets[i][4] = (dest_addr >> 16) & 0x0F;
-        packets[i][5] = (dest_addr >> 8) & 0x0F;
-        packets[i][6] = (dest_addr) & 0x0F;
+        packets[i][4] = (dest_addr >> 16) & 0xFF;
+        packets[i][5] = (dest_addr >> 8) & 0xFF;
+        packets[i][6] = (dest_addr) & 0xFF;
         packets[i][7] = (src_port << 4) | dest_port;
         packets[i][8] = (fragment_offset >> 6) & 0xFF;
         packets[i][9] = ((fragment_offset & 0x3F) << 2);
