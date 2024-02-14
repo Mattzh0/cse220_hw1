@@ -125,20 +125,21 @@ unsigned int packetize_array_sf(int *array, unsigned int array_len, unsigned cha
         packets[i][12] = (maximum_hop_count & 0x01) << 7;
         packets[i][15] = (compression_scheme << 6) | (traffic_class);
 
-        unsigned int packet_length = 16;
-        for (int j = 16; j <= ((16 + max_payload) - 4); j++) {
-            packets[i][j] = (array[array_index] >> 24) & 0xFF; 
-            packets[i][j+1] = (array[array_index] >> 16) & 0xFF; 
-            packets[i][j+2] = (array[array_index] >> 8) & 0xFF; 
-            packets[i][j+3] = (array[array_index]) & 0xFF; 
+        unsigned int payload_length = 0;
+        for (unsigned int j=0; j < max_payload / 4 && array_index < array_len; j++) {
+            packets[i][16 + j * 4] = (array[array_index] >> 24) & 0xFF; 
+            packets[i][17 + j * 4] = (array[array_index] >> 16) & 0xFF; 
+            packets[i][18 + j * 4] = (array[array_index] >> 8) & 0xFF; 
+            packets[i][19 + j * 4] = (array[array_index]) & 0xFF; 
+            payload_length += 4;
             array_index += 1;
-            fragment_offset += 4;
-            packet_length += 4;
 
             if (array_index >= array_len) {
                 break;
             }
         }
+
+        unsigned int packet_length = 16 + payload_length;
 
         packets[i][9] |= ((packet_length >> 12) & 0x03);
         packets[i][10] = (packet_length >> 4) & 0xFF;
@@ -150,8 +151,10 @@ unsigned int packetize_array_sf(int *array, unsigned int array_len, unsigned cha
         packets[i][13] = (checksum >> 8) & 0xFF;
         packets[i][14] = checksum & 0xFF; 
 
+        fragment_offset += payload_length;
         num_packets += 1;
         i += 1;
     }
+
     return num_packets;
 }
