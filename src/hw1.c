@@ -103,17 +103,55 @@ unsigned int packetize_array_sf(int *array, unsigned int array_len, unsigned cha
                           unsigned int src_port, unsigned int dest_port, unsigned int maximum_hop_count,
                           unsigned int compression_scheme, unsigned int traffic_class)
 {
-    (void)array;
-    (void)array_len;
-    (void)packets;
-    (void)packets_len;
-    (void)max_payload;
-    (void)src_addr;
-    (void)dest_addr;
-    (void)src_port;
-    (void)dest_port;
-    (void)maximum_hop_count;
-    (void)compression_scheme;
-    (void)traffic_class;
-    return -1;
+    unsigned int num_packets = 0;
+    unsigned int i = 0;
+    unsigned int array_index= 0;
+    unsigned int fragment_offset = 0;
+
+    while ((i < packets_len) && (array_index < array_len)) {
+        packets[i] = malloc(16 + max_payload);
+            
+        packets[i][0] = (src_addr >> 20) & 0x0F;
+        packets[i][1] = (src_addr >> 12) & 0x0F;
+        packets[i][2] = (src_addr >> 4) & 0x0F;
+        packets[i][3] = ((src_addr & 0x0F) << 4) | ((dest_addr >> 24) & 0x0F);
+        packets[i][4] = (dest_addr >> 16) & 0x0F;
+        packets[i][5] = (dest_addr >> 8) & 0x0F;
+        packets[i][6] = (dest_addr) & 0x0F;
+        packets[i][7] = (src_port << 4) | dest_port;
+        packets[i][8] = (fragment_offset >> 6) & 0xFF;
+        packets[i][9] = ((fragment_offset & 0x3F) << 2);
+        packets[i][11] = (maximum_hop_count >> 1) & 0x0F;
+        packets[i][12] = (maximum_hop_count & 0x01) << 7;
+        packets[i][15] = (compression_scheme << 6) | (traffic_class);
+
+        unsigned int packet_length = 16;
+        for (int j = 16; j <= ((16 + max_payload) - 4); j++) {
+            packets[i][j] = (array[array_index] >> 24) & 0xFF; 
+            packets[i][j+1] = (array[array_index] >> 16) & 0xFF; 
+            packets[i][j+2] = (array[array_index] >> 8) & 0xFF; 
+            packets[i][j+3] = (array[array_index]) & 0xFF; 
+            array_index += 1;
+            fragment_offset += 4;
+            packet_length += 4;
+
+            if (array_index >= array_len) {
+                break;
+            }
+        }
+
+        packets[i][9] |= ((packet_length >> 12) & 0x03);
+        packets[i][10] = (packet_length >> 4) & 0xFF;
+        packets[i][11] |= ((packet_length & 0x0F) << 4);
+
+        unsigned int checksum = compute_checksum_sf(packets[i]);
+
+        packets[i][12] |= ((checksum >> 16) & 0x7F);
+        packets[i][13] = (checksum >> 8) & 0xFF;
+        packets[i][14] = checksum & 0xFF; 
+
+        num_packets += 1;
+        i += 1;
+    }
+    return num_packets;
 }
